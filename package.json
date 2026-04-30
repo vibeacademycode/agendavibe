@@ -1,15 +1,8 @@
 {
-  "name": "vibe-agenda-netlify-db",
+  "name": "vibe-agenda-netlify-pg",
   "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "netlify dev",
-    "build": "echo \"Static build ready\""
-  },
+  "private": true,
   "dependencies": {
-    "@netlify/neon": "latest"
-  },
-  "devDependencies": {
-    "netlify-cli": "latest"
+    "pg": "^8.13.1"
   }
 }
