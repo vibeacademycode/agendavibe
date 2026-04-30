@@ -22,17 +22,13 @@ function addDays(dateString, amount) {
   return d.toISOString().slice(0, 10);
 }
 
-function workingDaysBetween(startDate, endDate) {
-  const result = [];
-  let current = toDateOnly(startDate);
-  const end = toDateOnly(endDate);
-  while (current <= end) {
-    const d = new Date(`${current}T00:00:00Z`);
-    const day = d.getUTCDay();
-    if (day !== 0 && day !== 6) result.push(current);
-    current = addDays(current, 1);
-  }
-  return result;
+function generatedTourDates(startDate) {
+  // 10 camp days: first 5 days, skip 2 free days, then 5 more days.
+  return [0, 1, 2, 3, 4, 7, 8, 9, 10, 11].map(offset => addDays(startDate, offset));
+}
+
+function generatedTourEndDate(startDate) {
+  return addDays(startDate, 11);
 }
 
 async function renumberDays(db, tourId) {
@@ -54,12 +50,16 @@ async function renumberDays(db, tourId) {
 
 async function syncTourDays(db, tourId) {
   const tour = await db.query(
-    `SELECT to_char(start_date, 'YYYY-MM-DD') AS start_date, to_char(end_date, 'YYYY-MM-DD') AS end_date FROM tours WHERE id=$1`,
+    `SELECT to_char(start_date, 'YYYY-MM-DD') AS start_date FROM tours WHERE id=$1`,
     [tourId]
   );
   if (!tour.rows.length) return;
 
-  const wantedDates = workingDaysBetween(tour.rows[0].start_date, tour.rows[0].end_date);
+  const wantedDates = generatedTourDates(tour.rows[0].start_date);
+  const generatedEndDate = generatedTourEndDate(tour.rows[0].start_date);
+
+  await db.query(`UPDATE tours SET end_date=$1 WHERE id=$2`, [generatedEndDate, tourId]);
+
   for (const dayDate of wantedDates) {
     await db.query(
       `INSERT INTO days (tour_id, name, short_label, day_date, sort_order)
@@ -72,16 +72,9 @@ async function syncTourDays(db, tourId) {
   await db.query(
     `DELETE FROM days
      WHERE tour_id=$1
-       AND day_date < $2
+       AND day_date <> ALL($2::date[])
        AND NOT EXISTS (SELECT 1 FROM activities WHERE activities.day_id = days.id)`,
-    [tourId, tour.rows[0].start_date]
-  );
-  await db.query(
-    `DELETE FROM days
-     WHERE tour_id=$1
-       AND day_date > $2
-       AND NOT EXISTS (SELECT 1 FROM activities WHERE activities.day_id = days.id)`,
-    [tourId, tour.rows[0].end_date]
+    [tourId, wantedDates]
   );
 
   await renumberDays(db, tourId);
@@ -113,7 +106,7 @@ exports.handler = async (event) => {
     if (method === 'POST' && type === 'tour') {
       const r = await db.query(
         `INSERT INTO tours (name, emoji, start_date, end_date, sort_order) VALUES ($1,$2,$3,$4,0) RETURNING id`,
-        [body.name, body.emoji || '', body.start_date, body.end_date]
+        [body.name, body.emoji || '', body.start_date, generatedTourEndDate(body.start_date)]
       );
       await syncTourDays(db, r.rows[0].id);
       return json(200, { ok: true, id: r.rows[0].id });
@@ -122,7 +115,7 @@ exports.handler = async (event) => {
     if (method === 'PUT' && type === 'tour') {
       await db.query(
         `UPDATE tours SET name=$1, emoji=$2, start_date=$3, end_date=$4 WHERE id=$5`,
-        [body.name, body.emoji || '', body.start_date, body.end_date, body.id]
+        [body.name, body.emoji || '', body.start_date, generatedTourEndDate(body.start_date), body.id]
       );
       await syncTourDays(db, body.id);
       return json(200, { ok: true });
