@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a348f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="VIBE Agenda" />
+  <title>VIBE Academy — Agenda Mentorilor</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <style>
+    :root {
+      --blue: #0a348f;
+      --blue-2: #092866;
+      --yellow: #ffd43b;
+      --bg: #f5f7fb;
+      --card: rgba(255, 255, 255, 0.86);
+      --card-solid: #ffffff;
+      --border: rgba(10, 52, 143, 0.13);
+      --text: #111827;
+      --muted: #697386;
+      --input: #ffffff;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      --radius: 24px;
+    }
+
+    body.dark {
+      --bg: #070b14;
+      --card: rgba(18, 24, 38, 0.82);
+      --card-solid: #111827;
+      --border: rgba(255, 255, 255, 0.09);
+      --text: #f8fafc;
+      --muted: #9ca3af;
+      --input: #0f172a;
+      --shadow: 0 22px 55px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 212, 59, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(10, 52, 143, 0.22), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      min-height: 72px;
+      background: rgba(10, 52, 143, 0.92);
+      backdrop-filter: blur(18px);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px clamp(16px, 4vw, 48px);
+      box-shadow: 0 10px 30px rgba(10, 52, 143, 0.2);
+      animation: slideDown 0.55s ease both;
+    }
+
+    .brand-wrap { display: flex; align-items: center; gap: 12px; }
+
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #ffe27a, var(--yellow));
+      color: var(--blue);
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 -2px 5px rgba(0,0,0,0.08);
+    }
+
+    .brand { font-size: 21px; font-weight: 850; letter-spacing: -0.3px; }
+
+    .nav-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    button { font-family: inherit; }
+
+    .nav-btn, .primary-btn, .ghost-btn, .theme-btn, .install-btn {
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      font-weight: 800;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .nav-btn, .theme-btn, .install-btn { padding: 11px 16px; background: rgba(255,255,255,0.12); color: white; }
+    .nav-btn.active, .nav-btn:hover, .theme-btn:hover, .install-btn:hover { background: white; color: var(--blue); transform: translateY(-1px); }
+
+    .page { width: min(1240px, calc(100% - 24px)); margin: 0 auto; padding: 34px 0 56px; }
+
+    .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; align-items: stretch; margin-bottom: 22px; }
+
+    .hero-card, .glass-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      backdrop-filter: blur(18px);
+      transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+    }
+
+    .hero-card { padding: clamp(22px, 4vw, 36px); overflow: hidden; position: relative; animation: fadeUp 0.55s ease both; }
+    .stat-card { animation: fadeUp 0.65s ease both; }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      background: rgba(255, 212, 59, 0.22);
+      border-radius: 50%;
+      right: -80px;
+      top: -80px;
+      animation: floatBlob 5s ease-in-out infinite;
+    }
+
+    .eyebrow { color: var(--blue); font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    body.dark .eyebrow { color: var(--yellow); }
+
+    h1 { margin: 0; font-size: clamp(32px, 5vw, 56px); line-height: 0.95; letter-spacing: -1.6px; color: var(--text); }
+    .subtitle { margin: 16px 0 0; color: var(--muted); font-size: 17px; max-width: 680px; line-height: 1.55; }
+
+    .stat-card { padding: 24px; display: grid; gap: 14px; }
+    .stat { background: var(--card-solid); border: 1px solid var(--border); border-radius: 18px; padding: 16px; transition: 0.25s ease; }
+    .stat:hover { transform: translateY(-2px); }
+    .stat strong { display: block; font-size: 26px; color: var(--blue); }
+    body.dark .stat strong { color: var(--yellow); }
+    .stat span { color: var(--muted); font-size: 14px; }
+
+    .toolbar { padding: 16px; display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 18px; animation: fadeUp 0.7s ease both; }
+
+    select, input, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--input);
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+      color: var(--text);
+      transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    select:focus, input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(10, 52, 143, 0.12); }
+    textarea { min-height: 86px; resize: vertical; }
+
+    .primary-btn { background: var(--blue); color: white; padding: 14px 18px; box-shadow: 0 12px 25px rgba(10, 52, 143, 0.22); }
+    .primary-btn:hover { transform: translateY(-1px); background: var(--blue-2); }
+    .ghost-btn { background: rgba(10, 52, 143, 0.10); color: var(--blue); padding: 13px 17px; }
+    body.dark .ghost-btn { background: rgba(255,255,255,0.09); color: white; }
+    .ghost-btn:hover { transform: translateY(-1px); }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(92px, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+      overflow-x: auto;
+      padding: 2px 2px 8px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      animation: fadeUp 0.75s ease both;
+    }
+
+    .days::-webkit-scrollbar { height: 6px; }
+    .days::-webkit-scrollbar-thumb { background: rgba(10, 52, 143, 0.35); border-radius: 999px; }
+
+    .day-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 18px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: 0.24s ease;
+      min-width: 92px;
+      color: var(--text);
+      scroll-snap-align: center;
+    }
+
+    .day-btn strong { display: block; color: var(--text); font-size: 14px; }
+    .day-btn span { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .day-btn.active { background: var(--blue); transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 30px rgba(10, 52, 143, 0.25); }
+    .day-btn.active strong, .day-btn.active span { color: white; }
+
+    .swipe-hint { display: none; color: var(--muted); font-size: 13px; margin: -8px 0 14px; text-align: center; }
+
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 26px 0 18px; animation: fadeUp 0.8s ease both; }
+    .section-head h2 { margin: 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.8px; }
+    .section-head p { margin: 6px 0 0; color: var(--muted); }
+
+    .schedule-grid { display: grid; gap: 16px; touch-action: pan-y; }
+    .schedule-grid.animating { animation: contentIn 0.32s ease both; }
+    .schedule-grid.swipe-left { animation: swipeLeft 0.28s ease both; }
+    .schedule-grid.swipe-right { animation: swipeRight 0.28s ease both; }
+
+    .schedule-card {
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--card-solid);
+      box-shadow: var(--shadow);
+      transition: transform 0.24s ease, box-shadow 0.24s ease;
+    }
+
+    .schedule-card:hover { transform: translateY(-3px); }
+
+    .schedule-header {
+      background: linear-gradient(135deg, var(--blue), #1349b6);
+      color: white;
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .logo img {
+      max-height: 40px;
+      display: block;
+      width: auto;
+    }
+
+    .time { font-size: 22px; font-weight: 900; letter-spacing: -0.4px; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+    .activity { font-weight: 750; text-align: right; display: flex; align-items: center; gap: 10px; }
+
+    .schedule-body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; }
+    .info-box { min-height: 118px; border-radius: 20px; padding: 16px; border: 1px solid rgba(255,255,255,0.08); transition: transform 0.22s ease; }
+    .info-box:hover { transform: translateY(-2px); }
+    .info-box .title { font-weight: 900; margin-bottom: 10px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .info-box p { margin: 0; line-height: 1.45; font-size: 14px; color: var(--text); }
+
+    .small { background: #edf5ff; } .small .title { color: #0757c9; }
+    .big { background: #ecfbf1; } .big .title { color: #08783a; }
+    .needs { background: #fff9df; } .needs .title { color: #a16207; }
+    body.dark .small { background: rgba(37, 99, 235, 0.16); }
+    body.dark .big { background: rgba(34, 197, 94, 0.14); }
+    body.dark .needs { background: rgba(245, 158, 11, 0.15); }
+    body.dark .small .title { color: #93c5fd; }
+    body.dark .big .title { color: #86efac; }
+    body.dark .needs .title { color: #fde68a; }
+
+    .hidden { display: none !important; }
+
+    .admin-layout { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 18px; align-items: start; }
+    .admin-panel { padding: 22px; }
+    .admin-panel h2 { margin: 0 0 6px; font-size: 28px; letter-spacing: -0.8px; }
+    .admin-panel p { margin: 0 0 18px; color: var(--muted); }
+    .form-grid { display: grid; gap: 12px; }
+    .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .admin-list { padding: 18px; display: grid; gap: 12px; }
+    .admin-item { display: flex; justify-content: space-between; gap: 16px; align-items: center; background: var(--card-solid); border: 1px solid var(--border); border-radius: 18px; padding: 14px; }
+    .admin-item strong { display: block; }
+    .admin-item span { color: var(--muted); font-size: 13px; }
+
+    .edit-btn { border: 0; background: rgba(10, 52, 143, 0.10); color: var(--blue); padding: 10px 13px; border-radius: 999px; cursor: pointer; font-weight: 850; display: inline-flex; gap: 8px; align-items: center; }
+    body.dark .edit-btn { background: rgba(255, 255, 255, 0.09); color: #bfdbfe; }
+    .delete-btn { border: 0; background: #fff1f2; color: #be123c; padding: 10px 13px; border-radius: 999px; cursor: pointer; font-weight: 850; display: inline-flex; gap: 8px; align-items: center; }
+    body.dark .delete-btn { background: rgba(244, 63, 94, 0.15); color: #fda4af; }
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .back-top {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: 52px;
+      height: 52px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 16px 35px rgba(10, 52, 143, 0.35);
+      cursor: pointer;
+      z-index: 45;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px);
+      transition: 0.24s ease;
+    }
+
+    .back-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .back-top:hover { transform: translateY(-3px); background: var(--blue-2); }
+
+    .lock-screen { width: min(460px, 100%); margin: 36px auto 0; padding: 26px; text-align: center; animation: scaleIn 0.3s ease both; }
+    .lock-icon { width: 72px; height: 72px; border-radius: 24px; display: grid; place-items: center; margin: 0 auto 16px; background: rgba(10, 52, 143, 0.10); color: var(--blue); font-size: 28px; }
+    body.dark .lock-icon { background: rgba(255, 212, 59, 0.14); color: var(--yellow); }
+    .pin-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 16px; }
+    .error { margin-top: 12px; color: #e11d48; font-weight: 800; font-size: 14px; }
+
+    .install-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(120%);
+      width: min(520px, calc(100% - 24px));
+      background: var(--card-solid);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 22px;
+      padding: 14px;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      transition: 0.28s ease;
+    }
+
+    .install-toast.show { transform: translateX(-50%) translateY(0); }
+    .install-toast p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+    @keyframes contentIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes swipeLeft { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes swipeRight { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes floatBlob { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-12px, 12px) scale(1.05); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+
+    @media (max-width: 980px) {
+      .hero, .admin-layout { grid-template-columns: 1fr; }
+      .days { grid-template-columns: repeat(10, 92px); }
+      .schedule-body { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        align-items: center;
+        flex-direction: row;
+        gap: 10px;
+        min-height: 62px;
+        padding: 10px 12px;
+      }
+      .logo img { max-height: 32px; }
+      .brand { font-size: 19px; }
+      .nav-actions {
+        width: auto;
+        margin-left: auto;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 7px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .nav-btn, .theme-btn, .install-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 14px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        line-height: 0; /* IMPORTANT */
+      }
+      .nav-btn i,
+      .theme-btn i,
+      .install-btn i {
+        font-size: 18px;
+        line-height: 1;
+        display: block;
+      }      
+      .page { width: 100%; padding: 14px; }
+      .hero { gap: 12px; margin-bottom: 14px; }
+      .hero-card { padding: 18px; border-radius: 20px; }
+      h1 { font-size: 32px; }
+      .subtitle { font-size: 15px; }
+      .stat-card { padding: 14px; border-radius: 20px; }
+      .stat { padding: 13px; }
+      .toolbar { grid-template-columns: 1fr; padding: 12px; border-radius: 18px; }
+      .days { gap: 8px; margin-bottom: 10px; }
+      .day-btn { padding: 12px; border-radius: 14px; }
+      .swipe-hint { display: block; }
+      .section-head { align-items: flex-start; flex-direction: column; gap: 10px; margin-top: 18px; }
+      .agenda-head {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .agenda-head h2 { font-size: 25px; }
+      .agenda-head p { font-size: 13px; margin-top: 3px; }
+      .agenda-head .ghost-btn { padding: 11px 12px; white-space: nowrap; flex-shrink: 0; }
+      .schedule-header { flex-direction: column; align-items: flex-start; padding: 14px; }
+      .time { font-size: 16px; }
+      .activity { font-size: 14px; text-align: left; }
+      .schedule-body { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+      .schedule-card { border-radius: 20px; }
+      .info-box { padding: 14px; border-radius: 16px; min-height: auto; }
+      .info-box p { font-size: 13px; }
+      .two-cols, .pin-row { grid-template-columns: 1fr; }
+      .admin-item { align-items: flex-start; flex-direction: column; }
+      .admin-actions { width: 100%; justify-content: flex-start; }
+      .back-top { right: 14px; bottom: 14px; width: 48px; height: 48px; border-radius: 16px; }
+      .install-toast { grid-template-columns: 1fr; }
+      .nav-text {
+        display: none; /* scoate complet textul */
+      }
+    }
+
+    @media (max-width: 380px) {
+      .logo img { max-height: 28px; }
+      .nav-actions { gap: 5px; }
+      .nav-btn, .theme-btn, .install-btn { width: 36px; height: 36px; border-radius: 12px; }
+      .agenda-head .ghost-btn { font-size: 0; width: 42px; height: 42px; padding: 0; border-radius: 14px; }
+      .agenda-head .ghost-btn i { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">
+      <img src="logo-light.png" alt="">
+    </div>
+    <div class="nav-actions">
+    <button class="nav-btn active" onclick="showPage('agenda')">
+      <i class="fa-solid fa-calendar-days"></i>
+      <span class="nav-text">Agenda</span>
+    </button>
+
+    <button class="nav-btn admin-nav-btn" onclick="openAdmin()">
+      <i class="fa-solid fa-user-gear"></i>
+      <span class="nav-text">Admin</span>
+      </button>      
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn"><i class="fa-solid fa-moon"></i></button>
+      <button class="install-btn hidden" onclick="installApp()" id="installBtn"><i class="fa-solid fa-download"></i> Install App</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="agendaPage">
+      <div class="hero">
+        <div class="hero-card">
+          <div class="eyebrow"><i class="fa-solid fa-sparkles"></i> Tabără de vară</div>
+          <h1>Agenda Mentorilor</h1>
+          <p class="subtitle">Program clar, modern și ușor de urmărit pentru fiecare zi, grupă și activitate.</p>
+        </div>
+        <div class="glass-card stat-card">
+          <div class="stat"><strong id="totalDays">10</strong><span><i class="fa-regular fa-calendar"></i> Zile de activități</span></div>
+          <div class="stat"><strong id="totalActivities">2</strong><span><i class="fa-solid fa-list-check"></i> Activități în ziua selectată</span></div>
+        </div>
+      </div>
+
+      <div class="glass-card toolbar">
+        <select id="tour" onchange="changeTour()"></select>
+      </div>
+
+      <div class="days" id="days"></div>
+      <div class="swipe-hint"><i class="fa-solid fa-hand-point-left"></i> Swipe stânga/dreapta pentru zile</div>
+
+      <div class="section-head agenda-head">
+        <div>
+          <h2 id="dayName">Ziua 1</h2>
+          <p id="dayDate">02-06-2025</p>
+        </div>
+        <button class="ghost-btn" onclick="window.print()"><i class="fa-solid fa-print"></i> <span>Printează agenda</span></button>
+      </div>
+
+      <section class="schedule-grid" id="schedule"></section>
+    </section>
+
+    <section id="pinPage" class="hidden">
+      <div class="glass-card lock-screen">
+        <div class="lock-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h2>Acces Admin</h2>
+        <p>Introdu PIN-ul pentru a putea edita ture, zile și activități.</p>
+        <div class="pin-row">
+          <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN admin" maxlength="6">
+          <button class="primary-btn" onclick="checkPin()"><i class="fa-solid fa-unlock"></i> Intră</button>
+        </div>
+        <div id="pinError" class="error hidden"><i class="fa-solid fa-circle-exclamation"></i> PIN greșit</div>
+      </div>
+    </section>
+
+    <section id="adminPage" class="hidden">
+      <div class="section-head">
+        <div>
+          <h2><i class="fa-solid fa-user-gear"></i> Admin Panel</h2>
+          <p>Adaugă, editează sau șterge activități din agenda website-ului.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="ghost-btn" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Ieșire Admin</button>
+          <button class="ghost-btn" onclick="showPage('agenda')"><i class="fa-solid fa-arrow-left"></i> Înapoi</button>
+        </div>
+      </div>
+
+      
+      <div class="glass-card admin-list" style="margin-bottom:18px;">
+        <h2 style="margin:0;"><i class="fa-solid fa-route"></i> Ture și zile</h2>
+        <p style="margin:0;color:var(--muted);">Editează turele, perioada fiecărei ture și zilele din program.</p>
+        <div class="two-cols">
+          <form class="form-grid" onsubmit="saveTourForm(event)" id="tourForm">
+            <input type="hidden" id="tourId">
+            <input id="tourTitle" placeholder="Denumire tură" required>
+            <div class="two-cols"><input id="tourEmoji" placeholder="Emoji: 🤖"><input id="tourOrder" type="number" placeholder="Ordine" value="1"></div>
+            <div class="two-cols"><input id="tourStart" type="date" required><input id="tourEnd" type="date" required></div>
+            <button class="primary-btn" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvează tură</button>
+            <button class="ghost-btn" type="button" onclick="resetTourForm()"><i class="fa-solid fa-plus"></i> Tură nouă</button>
+          </form>
+          <form class="form-grid" onsubmit="saveDayForm(event)" id="dayForm">
+            <input type="hidden" id="dayId">
+            <select id="dayTour"></select>
+            <div class="two-cols"><input id="dayNameInput" placeholder="Ziua 1" required><input id="dayShort" placeholder="02 iun" required></div>
+            <div class="two-cols"><input id="dayDateInput" placeholder="02-06-2025" required><input id="dayOrder" type="number" placeholder="Ordine" value="1"></div>
+            <button class="primary-btn" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvează zi</button>
+            <button class="ghost-btn" type="button" onclick="resetDayForm()"><i class="fa-solid fa-plus"></i> Zi nouă</button>
+          </form>
+        </div>
+        <div id="adminToursList"></div>
+      </div>
+
+      <div class="admin-layout">
+        <form class="glass-card admin-panel" onsubmit="saveActivityForm(event)" id="activityForm">
+          <h2 id="formTitle"><i class="fa-solid fa-circle-plus"></i> Activitate nouă</h2>
+          <p id="formSubtitle">Completează datele și activitatea apare imediat pe pagina principală.</p>
+
+          <div class="form-grid">
+            <select id="adminDay"></select>
+            <div class="two-cols">
+              <input id="adminTime" placeholder="Ora: 10:30 - 12:00" required />
+              <input id="adminTitle" placeholder="Titlu activitate" required />
+            </div>
+            <textarea id="adminSmall" placeholder="Descriere Grupa Mică" required></textarea>
+            <textarea id="adminBig" placeholder="Descriere Grupa Mare" required></textarea>
+            <textarea id="adminNeeds" placeholder="Materiale necesare" required></textarea>
+            <button class="primary-btn" type="submit" id="submitBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Adaugă pe website</button>
+            <button class="ghost-btn hidden" type="button" id="cancelEditBtn" onclick="cancelEdit()"><i class="fa-solid fa-xmark"></i> Anulează editarea</button>
+          </div>
+        </form>
+
+        <div class="glass-card admin-list" id="adminList"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="install-toast" id="installToast">
+    <div>
+      <strong><i class="fa-solid fa-mobile-screen"></i> Instalează VIBE Agenda</strong>
+      <p>Poți deschide agenda direct ca aplicație pe telefon sau calculator.</p>
+    </div>
+    <button class="primary-btn" onclick="installApp()"><i class="fa-solid fa-download"></i> Install</button>
+  </div>
+
+  <button class="back-top" id="backTopBtn" onclick="scrollToTop()" aria-label="Înapoi sus"><i class="fa-solid fa-arrow-up"></i></button>
+
+  <script src="app.js"></script>
+</body>
+</html>

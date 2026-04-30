@@ -1,0 +1,15 @@
+{
+  "name": "vibe-agenda-netlify-db",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo \"Static build ready\""
+  },
+  "dependencies": {
+    "@netlify/neon": "latest"
+  },
+  "devDependencies": {
+    "netlify-cli": "latest"
+  }
+}
