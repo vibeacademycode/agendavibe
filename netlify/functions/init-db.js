@@ -97,9 +97,12 @@ exports.handler = async (event) => {
         small TEXT NOT NULL,
         big TEXT NOT NULL,
         needs TEXT NOT NULL,
+        group_mode TEXT DEFAULT 'separate',
         sort_order INTEGER DEFAULT 0
       );
     `);
+
+    await db.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS group_mode TEXT DEFAULT 'separate'`);
 
     const count = await db.query('SELECT COUNT(*)::int AS count FROM tours');
     if (count.rows[0].count === 0) {
@@ -119,8 +122,8 @@ exports.handler = async (event) => {
         );
         if (i === 0) {
           await db.query(
-            `INSERT INTO activities (day_id, time, title, small, big, needs, sort_order)
-             VALUES ($1,$2,$3,$4,$5,$6,1), ($1,$7,$8,$9,$10,$11,2)`,
+            `INSERT INTO activities (day_id, time, title, small, big, needs, group_mode, sort_order)
+             VALUES ($1,$2,$3,$4,$5,$6,'both',1), ($1,$7,$8,$9,$10,$11,'separate',2)`,
             [
               day.rows[0].id,
               '07:30 - 09:00',

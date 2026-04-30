@@ -83,7 +83,8 @@ async function syncTourDays(db, tourId) {
 async function getAllData(db) {
   const tours = await db.query(`SELECT id, name, emoji, to_char(start_date, 'YYYY-MM-DD') AS start_date, to_char(end_date, 'YYYY-MM-DD') AS end_date, sort_order FROM tours ORDER BY start_date, end_date, id`);
   const days = await db.query(`SELECT id, tour_id, name, short_label, to_char(day_date, 'YYYY-MM-DD') AS day_date, sort_order FROM days ORDER BY day_date, id`);
-  const activities = await db.query(`SELECT id, day_id, time, title, small, big, needs, sort_order FROM activities ORDER BY time, id`);
+  await db.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS group_mode TEXT DEFAULT 'separate'`);
+  const activities = await db.query(`SELECT id, day_id, time, title, small, big, needs, COALESCE(group_mode, 'separate') AS group_mode, sort_order FROM activities ORDER BY time, id`);
   return { tours: tours.rows, days: days.rows, activities: activities.rows };
 }
 
@@ -153,16 +154,16 @@ exports.handler = async (event) => {
 
     if (method === 'POST' && type === 'activity') {
       const r = await db.query(
-        `INSERT INTO activities (day_id, time, title, small, big, needs, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-        [body.day_id, body.time, body.title, body.small, body.big, body.needs, body.sort_order || 0]
+        `INSERT INTO activities (day_id, time, title, small, big, needs, group_mode, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+        [body.day_id, body.time, body.title, body.small, body.big, body.needs, body.group_mode || 'separate', body.sort_order || 0]
       );
       return json(200, { ok: true, id: r.rows[0].id });
     }
 
     if (method === 'PUT' && type === 'activity') {
       await db.query(
-        `UPDATE activities SET day_id=$1, time=$2, title=$3, small=$4, big=$5, needs=$6, sort_order=$7 WHERE id=$8`,
-        [body.day_id, body.time, body.title, body.small, body.big, body.needs, body.sort_order || 0, body.id]
+        `UPDATE activities SET day_id=$1, time=$2, title=$3, small=$4, big=$5, needs=$6, group_mode=$7, sort_order=$8 WHERE id=$9`,
+        [body.day_id, body.time, body.title, body.small, body.big, body.needs, body.group_mode || 'separate', body.sort_order || 0, body.id]
       );
       return json(200, { ok: true });
     }
