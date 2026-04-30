@@ -1,0 +1,11 @@
+{
+  "name": "vibe-agenda-netlify-pg",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "scripts": {
+    "build": "echo 'No build needed'"
+  }
+}
