@@ -152,6 +152,44 @@ exports.handler = async (event) => {
       return json(200, { ok: true });
     }
 
+    if (method === 'POST' && type === 'duplicate_day') {
+      const sourceDayId = Number(body.source_day_id);
+      const targetDayIds = Array.isArray(body.target_day_ids) ? body.target_day_ids.map(Number).filter(Boolean) : [];
+      const replace = body.replace !== false;
+
+      if (!sourceDayId || !targetDayIds.length) {
+        return json(400, { ok: false, error: 'Choose source day and at least one target day.' });
+      }
+
+      const sourceActivities = await db.query(
+        `SELECT time, title, small, big, needs, COALESCE(group_mode, 'separate') AS group_mode, sort_order
+         FROM activities
+         WHERE day_id=$1
+         ORDER BY time, id`,
+        [sourceDayId]
+      );
+
+      if (!sourceActivities.rows.length) {
+        return json(400, { ok: false, error: 'Source day has no activities to duplicate.' });
+      }
+
+      let copied = 0;
+      for (const targetDayId of targetDayIds) {
+        if (!targetDayId || targetDayId === sourceDayId) continue;
+        if (replace) await db.query(`DELETE FROM activities WHERE day_id=$1`, [targetDayId]);
+        for (const a of sourceActivities.rows) {
+          await db.query(
+            `INSERT INTO activities (day_id, time, title, small, big, needs, group_mode, sort_order)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+            [targetDayId, a.time, a.title, a.small, a.big, a.needs, a.group_mode || 'separate', a.sort_order || 0]
+          );
+          copied++;
+        }
+      }
+
+      return json(200, { ok: true, copied });
+    }
+
     if (method === 'POST' && type === 'activity') {
       const r = await db.query(
         `INSERT INTO activities (day_id, time, title, small, big, needs, group_mode, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
